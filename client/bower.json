@@ -1,0 +1,13 @@
+{
+  "name": "Distributed-Quiz",
+  "version": "0.0.0",
+  "dependencies": {
+    "iron-a11y-keys": "PolymerElements/iron-a11y-keys#^1.0.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.0.0",
+    "paper-button": "PolymerElements/paper-button#^1.0.0",
+    "polymer": "Polymer/polymer#^1.6.0",
+    "app-layout": "PolymerElements/app-layout#^0.10.6",
+    "paper-radio-group": "PolymerElements/paper-radio-group#^1.2.1",
+    "paper-radio-button": "PolymerElements/paper-radio-button#^1.3.1"
+  }
+}

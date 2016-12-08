@@ -1,0 +1,96 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../bower_components/paper-radio-button/paper-radio-button.html">
+
+<dom-module id="d-question">
+    <template>
+        <style>
+            :host {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+            .layout-container {
+                display: flex;
+                height: 99%;
+                flex-direction: column;
+            }
+            .question {
+                margin: 10px;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24pt;
+            }
+            .choices {
+                flex: 4;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+            }
+            .submit {
+                background-color: #2ecc71;
+            }
+        </style>
+        <div class="layout-container">
+            <span class="question">
+                [[question]]
+            </span>
+
+            <template is="dom-if" if="[[_shouldRenderChoices]]">
+                <paper-radio-group selected="0" class="choices">
+                    <template is="dom-repeat" items="{{choices}}">
+                        <paper-radio-button name="{{index}}">{{item}}</paper-radio-button>
+                    </template>
+                </paper-radio-group>
+
+                <paper-button class="submit" raised>
+                    Submit
+                </paper-button>
+            </template>
+
+            <template is="dom-if" if="[[_shouldRenderBuzzButton]]">
+                <paper-button
+                        class="submit"
+                        raised
+                        on-tap="buzz"
+                >
+                    Buzz
+                </paper-button>
+            </template>
+
+
+        </div>
+    </template>
+    <script>
+        Polymer({
+            /* this is the element's prototype */
+            is: 'd-question',
+            properties: {
+                buzzState: {
+                    type: String,
+                    value: 'Not Answered'
+                },
+                _shouldRenderChoices: {
+                    computed: '_computeShouldRenderChoices(buzzState)'
+                },
+                _shouldRenderBuzzButton: {
+                    computed: '_computeShouldRenderBuzzButton(buzzState)'
+                },
+                question: String,
+                choices: Array
+            },
+            _computeShouldRenderChoices(buzzState) {
+                return buzzState === 'Waiting For Me';
+            },
+            _computeShouldRenderBuzzButton(buzzState) {
+                return buzzState === 'Not Answered';
+            },
+            buzz() {
+                this.buzzState = 'Waiting For Me';
+            }
+        });
+    </script>
+</dom-module>

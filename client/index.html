@@ -2,9 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Distributed Quiz</title>
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <link rel="import" href="components/d-question.html">
+
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            font-family: 'Roboto', 'Noto', 'Helvetica Neue', 'Arial', sans-serif;
+        }
+    </style>
 </head>
 <body>
-    <p>Hello from HTML page</p>
+    <d-question
+            question="What is the capital of France?"
+            choices='["Paris", "London", "Madrid", "Prague"]'
+    >
+    </d-question>
 </body>
 </html>
