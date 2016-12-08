@@ -13,16 +13,26 @@
 
 'use strict';
 
+
 const express = require('express');
+const path = require('path');
 
 const app = express();
 
-// [START hello_world]
-// Say hello!
+app.use('/static', express.static(path.join(__dirname, 'client')));
+
+function staticFile(filename) {
+  return path.join(__dirname, 'client', filename);
+}
+
+// Home Route
 app.get('/', (req, res) => {
-  res.status(200).send('Hello, world! Yay!');
+  res.sendFile(staticFile('index.html'));
 });
-// [END hello_world]
+
+
+
+
 
 if (module === require.main) {
   // [START server]
