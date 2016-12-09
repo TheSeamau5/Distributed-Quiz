@@ -23,7 +23,7 @@
     </d-question>
     <script src="bower_components/socket.io-client/dist/socket.io.js"></script>
     <script>
-        var socket = io.connect('localhost:8080/');
+        var socket = io.connect('localhost:8080');
         socket.on('acknowledge connection', function(data) {
            alert('Connection Established');
         });

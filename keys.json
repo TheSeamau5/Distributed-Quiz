@@ -1,0 +1,7 @@
+{
+  "mongoHost": "ds159737.mlab.com",
+  "mongoPort": "59737",
+  "mongoDatabase": "distributed-quiz",
+  "mongoUser": "Admin",
+  "mongoPass": "VectorClock"
+}
