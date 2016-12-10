@@ -54,6 +54,9 @@ const QUESTIONS = [{
   }
 }];
 
+
+let USERS = [];
+
 // Home Route
 app.get('/', (req, res) => {
   res.sendFile(staticFile('index.html'));
@@ -62,8 +65,42 @@ app.get('/', (req, res) => {
 // Socket Routes
 io.on('connection', function(socket) {
   console.log('Connection established');
-  socket.emit('acknowledge connection', {});
+
+  socket.emit('request time', {
+
+  });
+
+  socket.on('respond time', function(data) {
+    console.log(new Date(data.timestamp));
+  });
+
+  socket.on('create new user', function() {
+    let index = USERS.length;
+    USERS.push({
+      score: 0
+    });
+    socket.emit('new user', {
+      id: index
+    });
+  });
 });
+
+// var User = new mongoose.Model('User', {});
+
+//io.on('create new user', function(socket) {
+//  var newUser = new User();
+//
+//  newUser.save(function(err, newUser) {
+//    if (err) {
+//      // error handling
+//    } else {
+//      socket.emit('new user', { id: newUser._id });
+//    }
+//  })
+//});
+
+
+
 
 // Start the server
 if (module === require.main) {

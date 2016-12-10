@@ -17,16 +17,50 @@
 </head>
 <body>
     <d-question
-            question="What is the capital of France?"
-            choices='["Paris", "London", "Madrid", "Prague"]'
+            question="What is the capital of Spain?"
+            choices='["Paris", "London", "Madrid"]'
     >
     </d-question>
     <script src="bower_components/socket.io-client/dist/socket.io.js"></script>
+    <script src="bower_components/localforage/dist/localforage.js"></script>
     <script>
         var socket = io.connect('localhost:8080');
-        socket.on('acknowledge connection', function(data) {
-           alert('Connection Established');
+
+        socket.on('request time', function() {
+            var timestamp = Date.now();
+            socket.emit('respond time', {
+                timestamp: timestamp
+            });
         });
+
+//        if (localforage.getItem('userId')) {
+        //            console.log('User exists with id ', localforage.getItem('userId'));
+        //        } else {
+        //            socket.emit('create new user');
+        //        }
+
+        localforage.getItem('userId', function(err, id) {
+            if (err) {
+                console.error(err);
+            } else if (id === 0 || id) {
+                console.log('User exists with id ', id);
+            } else {
+                socket.emit('create new user');
+            }
+        });
+
+        socket.on('new user', function(data) {
+            console.log('Created New User with id ', data.id);
+            localforage.setItem('userId', data.id);
+
+        });
+
+
+//        if (localStorage.getItem('user-id')) {
+//
+//        } else {
+//            socket.emit('create new user');
+//        }
     </script>
 </body>
 </html>
