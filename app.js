@@ -85,23 +85,6 @@ io.on('connection', function(socket) {
   });
 });
 
-// var User = new mongoose.Model('User', {});
-
-//io.on('create new user', function(socket) {
-//  var newUser = new User();
-//
-//  newUser.save(function(err, newUser) {
-//    if (err) {
-//      // error handling
-//    } else {
-//      socket.emit('new user', { id: newUser._id });
-//    }
-//  })
-//});
-
-
-
-
 // Start the server
 if (module === require.main) {
   httpserver.listen(process.env.PORT || 8080);

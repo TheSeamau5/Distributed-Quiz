@@ -5,6 +5,7 @@
     <title>Distributed Quiz</title>
     <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
     <link rel="import" href="components/d-question.html">
+    <link rel="import" href="components/d-homepage.html">
 
     <style>
         html, body {
@@ -16,11 +17,12 @@
     </style>
 </head>
 <body>
-    <d-question
+    <d-homepage></d-homepage>
+    <!--<d-question
             question="What is the capital of Spain?"
             choices='["Paris", "London", "Madrid"]'
     >
-    </d-question>
+    </d-question>-->
     <script src="bower_components/socket.io-client/dist/socket.io.js"></script>
     <script src="bower_components/localforage/dist/localforage.js"></script>
     <script>
