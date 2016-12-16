@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <dom-module id="d-homepage">
     <template>
@@ -13,7 +14,6 @@
             }
 
             .selections {
-                flex: 1;
                 display: flex;
                 flex-direction: column;
             }
@@ -23,32 +23,107 @@
                 margin-top: 10px;
             }
 
+            .new-game-container {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .container {
+                height: 100%;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .button-container {
+                height: 76px;
+                width: 100%;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
+            .create-button {
+                height: 44px;
+                background-color: #00e676;
+                margin-right: 16px;
+            }
+
         </style>
 
         <paper-header-panel>
             <paper-toolbar>
-                <div>Distributed Quiz</div>
+                <div>{{header}}</div>
             </paper-toolbar>
-            <div class="selections">
-                <paper-button class="game-button">
-                    Create New Game
-                </paper-button>
-                <template is="dom-repeat" items="{{games}}">
+
+
+            <template is="dom-if" if="[[_shouldRenderSelection]]">
+                <div class="selections">
                     <paper-button class="game-button">
-                        {{item.name}}
+                        Create New Game
                     </paper-button>
-                </template>
-            </div>
+                    <template is="dom-repeat" items="{{games}}">
+                        <paper-button class="game-button">
+                            Join: {{item.name}}
+                        </paper-button>
+                    </template>
+                </div>
+            </template>
+
+            <template is="dom-if" if="[[_shouldRenderCreateNewGameScreen]]">
+                <div class="content fit container">
+                    <div class="new-game-container">
+                        <paper-input label="Enter Quiz Name"></paper-input>
+                    </div>
+                    <div class="button-container">
+                        <paper-button class="create-button">CREATE</paper-button>
+                    </div>
+                </div>
+            </template>
+
         </paper-header-panel>
 
 
 
     </template>
     <script>
+        const EMPTY_STATE = 'empty state';
+        const CREATING_NEW_GAME = 'creating new game';
+        const JOINING_GAME = 'joining game';
+
         Polymer({
             is: "d-homepage",
             properties: {
-                games: Array
+                games: Array,
+                header: {
+                    type: String,
+                    value: 'Distributed Quiz'
+                },
+                state: {
+                    type: String,
+                    value: CREATING_NEW_GAME // EMPTY_STATE
+                },
+                _shouldRenderSelection: {
+                    computed: '_computeShouldRenderSelection(state)'
+                },
+                _shouldRenderCreateNewGameScreen: {
+                    computed: '_computeShouldRenderCreateNewGameScreen(state)'
+                },
+                _shouldRenderJoinGameScreen: {
+                    computed: '_computeShouldRenderJoinGameScreen(state)'
+                }
+            },
+            _computeShouldRenderSelection(state) {
+                return state === EMPTY_STATE;
+            },
+            _computeShouldRenderCreateNewGameScreen(state) {
+                return state === CREATING_NEW_GAME;
+            },
+            _computeShouldRenderJoinGameScreen(state) {
+                return state === JOINING_GAME;
             }
         });
     </script>
