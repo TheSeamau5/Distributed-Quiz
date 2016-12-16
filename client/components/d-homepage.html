@@ -1,5 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 
 <dom-module id="d-homepage">
     <template>
@@ -23,16 +25,23 @@
 
         </style>
 
-        <div class="selections">
-            <paper-button class="game-button">
-                Create New Game
-            </paper-button>
-            <template is="dom-repeat" items="{{games}}">
+        <paper-header-panel>
+            <paper-toolbar>
+                <div>Distributed Quiz</div>
+            </paper-toolbar>
+            <div class="selections">
                 <paper-button class="game-button">
-                    {{item.name}}
+                    Create New Game
                 </paper-button>
-            </template>
-        </div>
+                <template is="dom-repeat" items="{{games}}">
+                    <paper-button class="game-button">
+                        {{item.name}}
+                    </paper-button>
+                </template>
+            </div>
+        </paper-header-panel>
+
+
 
     </template>
     <script>
