@@ -4,18 +4,43 @@
 <dom-module id="d-homepage">
     <template>
         <style>
-            .create-game-button {
-                background-color: #c51162;
+            :host {
+                display: block;
+                width: 100%;
+                height: 100%;
             }
+
+            .selections {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .game-button {
+                background-color: #e0e0e0;
+                margin-top: 10px;
+            }
+
         </style>
 
-        <paper-button class="create-game-button">
-            Create Game
-        </paper-button>
+        <div class="selections">
+            <paper-button class="game-button">
+                Create New Game
+            </paper-button>
+            <template is="dom-repeat" items="{{games}}">
+                <paper-button class="game-button">
+                    {{item.name}}
+                </paper-button>
+            </template>
+        </div>
+
     </template>
     <script>
         Polymer({
-            is: "d-homepage"
+            is: "d-homepage",
+            properties: {
+                games: Array
+            }
         });
     </script>
 </dom-module>
