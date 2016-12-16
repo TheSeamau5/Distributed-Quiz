@@ -4,30 +4,17 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const socketio = require('socket.io');
-
-
-// // Express App
-// const app = express();
-//
-// // Route any queries for static files to the client directory
-// app.use('/', express.static(path.join(__dirname, 'client')));
-//
-// // Http Server
-// const httpserver = require('http').Server(app);
-//
-// // Socket Server
-// const io = require('socket.io').listen(httpserver);
-//
+const uuid = require('uuid/v4');
 
 // Import the Socket container
 const Socket = require('./lib/socket');
 
 // Import the clock libraries
-const MasterClock = require('./lib/master-clock');
 const SlaveClockProxy = require('./lib/slave-clock-proxy');
 
-// Create the Master Clock
-// const masterClock = new MasterClock([]);
+// Import the game libraries
+const Game = require('./lib/game');
+const Player = require('./lib/player');
 
 // Function to route a static file to the client directory
 function staticFile(filename) {
@@ -47,7 +34,10 @@ class App {
     this.io = socketio.listen(this.httpserver);
 
     // Create the Master Clock
-    this.masterClock = new MasterClock();
+    // this.masterClock = new MasterClock();
+
+    // Create the Game
+    this.game = null;
 
     // Setup routes
     this._setupHttpRoutes();
@@ -63,11 +53,10 @@ class App {
 
   _setupSocketConnection() {
     this.io.on('connection', (socket) => {
-      this.masterClock.addSlaveClock(new SlaveClockProxy(new Socket(socket)));
-
-      setInterval(() => {
-        this.masterClock.sync();
-      }, 3000);
+      const playerClock = new SlaveClockProxy(new Socket(socket));
+      const player = new Player(uuid(), 'player', playerClock);
+      this.addPlayer(player);
+      this.game.run();
     });
   }
 
@@ -75,48 +64,21 @@ class App {
     res.sendFile(staticFile('index.html'));
   }
 
+  addPlayer(player) {
+    if (!this.game) {
+      this.game = new Game('game', player);
+    } else {
+      this.game.addPlayer(player);
+    }
+  }
+
   run() {
-    this.httpserver.listen(process.env.PORT || 8080);
+    if (module === require.main) {
+      this.httpserver.listen(process.env.PORT || 8080);
+    }
     module.exports = this.app;
   }
 }
 
 const app = new App();
 app.run();
-
-
-// let USERS = [];
-//
-// // Home Route
-// app.get('/', (req, res) => {
-//   res.sendFile(staticFile('index.html'));
-// });
-//
-// // Socket Routes
-// io.on('connection', function(socket) {
-//   console.log('Connection established');
-//
-//   const slaveClockProxy = new SlaveClockProxy(new Socket(socket));
-//   masterClock.addSlaveClock(slaveClockProxy);
-//
-//   setInterval(() => {
-//     masterClock.sync();
-//   }, 1000);
-//
-//   socket.on('create new user', function() {
-//     let index = USERS.length;
-//     USERS.push({
-//       score: 0
-//     });
-//     socket.emit('new user', {
-//       id: index
-//     });
-//   });
-// });
-//
-// // Start the server
-// if (module === require.main) {
-//   httpserver.listen(process.env.PORT || 8080);
-// }
-//
-// module.exports = app;
