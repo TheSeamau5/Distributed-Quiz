@@ -52,6 +52,16 @@
                 margin-right: 16px;
             }
 
+            .player-list-container {
+                flex: 1;
+            }
+
+            .start-button {
+                width: 100%;
+                margin: 0;
+                background-color: #00e676;
+            }
+
         </style>
 
         <paper-header-panel>
@@ -84,6 +94,19 @@
                 </div>
             </template>
 
+            <template is="dom-if" if="[[_shouldRenderJoinGameScreen]]">
+                <div class="content fit container">
+                    <div class="player-list-container">
+                        Players:
+                    </div>
+                    <template is="dom-if" if="[[_shouldRenderStartButton]]">
+                        <paper-button class="start-button">
+                            START
+                        </paper-button>
+                    </template>
+                </div>
+            </template>
+
         </paper-header-panel>
 
 
@@ -98,13 +121,18 @@
             is: "d-homepage",
             properties: {
                 games: Array,
+                selectedGame: Object,
                 header: {
                     type: String,
                     value: 'Distributed Quiz'
                 },
                 state: {
                     type: String,
-                    value: CREATING_NEW_GAME // EMPTY_STATE
+                    value: JOINING_GAME // EMPTY_STATE
+                },
+                isAdmin: {
+                    type: Boolean,
+                    value: true
                 },
                 _shouldRenderSelection: {
                     computed: '_computeShouldRenderSelection(state)'
@@ -114,6 +142,9 @@
                 },
                 _shouldRenderJoinGameScreen: {
                     computed: '_computeShouldRenderJoinGameScreen(state)'
+                },
+                _shouldRenderStartButton: {
+                    computed: '_computeShouldRenderStartButton(state, isAdmin)'
                 }
             },
             _computeShouldRenderSelection(state) {
@@ -124,6 +155,9 @@
             },
             _computeShouldRenderJoinGameScreen(state) {
                 return state === JOINING_GAME;
+            },
+            _computeShouldRenderStartButton(state, isAdmin) {
+                return (state === JOINING_GAME) && isAdmin;
             }
         });
     </script>
