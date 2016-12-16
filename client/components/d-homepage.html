@@ -64,6 +64,10 @@
                 background-color: #00e676;
             }
 
+            .disabled-button {
+                width: 100%;
+                margin: 0;
+            }
         </style>
 
         <paper-header-panel>
@@ -111,6 +115,12 @@
                             START
                         </paper-button>
                     </template>
+                    <template is="dom-if" if="[[_shouldRenderWaitingDisabledButton]]">
+                        <paper-button disabled class="disabled-button">
+                            WAITING...
+                        </paper-button>
+                    </template>
+
                 </div>
             </template>
 
@@ -149,7 +159,7 @@
                 },
                 isAdmin: {
                     type: Boolean,
-                    value: true
+                    value: false
                 },
                 players: {
                     computed: '_computePlayers(selectedGame)'
@@ -165,6 +175,9 @@
                 },
                 _shouldRenderStartButton: {
                     computed: '_computeShouldRenderStartButton(state, isAdmin)'
+                },
+                _shouldRenderWaitingDisabledButton: {
+                    computed: '_computedShouldRenderWaitingDisabledButton(state, isAdmin)'
                 }
             },
             _computeShouldRenderSelection(state) {
@@ -178,6 +191,9 @@
             },
             _computeShouldRenderStartButton(state, isAdmin) {
                 return (state === JOINING_GAME) && isAdmin;
+            },
+            _computedShouldRenderWaitingDisabledButton(state, isAdmin) {
+                return (state === JOINING_GAME) && (!isAdmin);
             },
             _computePlayers(selectedGame) {
                 return selectedGame ? selectedGame.players : [];
