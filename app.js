@@ -15,27 +15,15 @@ const httpserver = require('http').Server(app);
 // Socket Server
 const io = require('socket.io').listen(httpserver);
 
-// Mongoose (MongoDB driver)
-const mongoose = require('mongoose');
+// Import the Socket container
+const Socket = require('./lib/socket');
 
-// NConf for key-value store in json file
-const nconf = require('nconf');
+// Import the clock libraries
+const MasterClock = require('./lib/master-clock');
+const SlaveClockProxy = require('./lib/slave-clock-proxy');
 
-// Get the keys.json file with all the MongoDB info
-nconf.argv().env().file('keys.json');
-
-// Get the MongoDB Credentials from the keys.json file
-const mongoUser = nconf.get('mongoUser');
-const mongoPass = nconf.get('mongoPass');
-const mongoHost = nconf.get('mongoHost');
-const mongoPort = nconf.get('mongoPort');
-const mongoDatabase = nconf.get('mongoDatabase');
-
-// Construct the URI to connect to the MongoDB database
-const dbURI = `mongodb://${mongoUser}:${mongoPass}@${mongoHost}:${mongoPort}/${mongoDatabase}`;
-
-// Connect to the database
-mongoose.connect(dbURI);
+// Create the Master Clock
+const masterClock = new MasterClock([]);
 
 // Function to route a static file to the client directory
 function staticFile(filename) {
@@ -66,13 +54,12 @@ app.get('/', (req, res) => {
 io.on('connection', function(socket) {
   console.log('Connection established');
 
-  socket.emit('request time', {
+  const slaveClockProxy = new SlaveClockProxy(new Socket(socket));
+  masterClock.addSlaveClock(slaveClockProxy);
 
-  });
-
-  socket.on('respond time', function(data) {
-    console.log(new Date(data.timestamp));
-  });
+  setInterval(() => {
+    masterClock.sync();
+  }, 1000);
 
   socket.on('create new user', function() {
     let index = USERS.length;

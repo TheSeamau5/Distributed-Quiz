@@ -17,29 +17,30 @@
     </style>
 </head>
 <body>
-    <d-homepage></d-homepage>
-    <!--<d-question
+    <!--<d-homepage></d-homepage>-->
+    <d-question
             question="What is the capital of Spain?"
             choices='["Paris", "London", "Madrid"]'
     >
-    </d-question>-->
+    </d-question>
     <script src="bower_components/socket.io-client/dist/socket.io.js"></script>
     <script src="bower_components/localforage/dist/localforage.js"></script>
     <script>
-        var socket = io.connect('localhost:8080');
+        let socket = io.connect('localhost:8080');
+
+        let timeCorrection = 0;
 
         socket.on('request time', function() {
-            var timestamp = Date.now();
+            let timestamp = Date.now() + Math.round(timeCorrection);
             socket.emit('respond time', {
                 timestamp: timestamp
             });
         });
 
-//        if (localforage.getItem('userId')) {
-        //            console.log('User exists with id ', localforage.getItem('userId'));
-        //        } else {
-        //            socket.emit('create new user');
-        //        }
+        socket.on('correct time', function(data) {
+            timeCorrection = timeCorrection + data.correction;
+        });
+
 
         localforage.getItem('userId', function(err, id) {
             if (err) {
@@ -56,12 +57,6 @@
             localforage.setItem('userId', data.id);
 
         });
-
-
-//        if (localStorage.getItem('user-id')) {
-//
-//        } else {
-//            socket.emit('create new user');
 //        }
     </script>
 </body>
