@@ -17,11 +17,17 @@
     </style>
 </head>
 <body>
-    <!--<d-homepage></d-homepage>-->
-    <d-question
-            question="What is the capital of Spain?"
-            choices='["Paris", "London", "Madrid"]'
-    >
+    <d-homepage games='[{
+        "name": "Demo Quiz"
+    }, {
+        "name": "General Knowledge"
+    }]'>
+
+    </d-homepage>
+    <!--<d-question-->
+            <!--question="What is the capital of Spain?"-->
+            <!--choices='["Paris", "London", "Madrid"]'-->
+    <!--&gt;-->
     </d-question>
     <script src="bower_components/socket.io-client/dist/socket.io.js"></script>
     <script src="bower_components/localforage/dist/localforage.js"></script>

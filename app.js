@@ -6,15 +6,12 @@ const http = require('http');
 const socketio = require('socket.io');
 const uuid = require('uuid/v4');
 
-// Import the Socket container
-const Socket = require('./lib/socket');
-
-// Import the clock libraries
-const SlaveClockProxy = require('./lib/slave-clock-proxy');
 
 // Import the game libraries
 const Game = require('./lib/game');
 const Player = require('./lib/player');
+
+const SlaveClockProxy = require('./lib/slave-clock-proxy');
 
 // Function to route a static file to the client directory
 function staticFile(filename) {
@@ -33,9 +30,6 @@ class App {
     // Create the socket
     this.io = socketio.listen(this.httpserver);
 
-    // Create the Master Clock
-    // this.masterClock = new MasterClock();
-
     // Create the Game
     this.game = null;
 
@@ -53,7 +47,7 @@ class App {
 
   _setupSocketConnection() {
     this.io.on('connection', (socket) => {
-      const playerClock = new SlaveClockProxy(new Socket(socket));
+      const playerClock = new SlaveClockProxy(socket);
       const player = new Player(uuid(), 'player', playerClock);
       this.addPlayer(player);
       this.game.run();
