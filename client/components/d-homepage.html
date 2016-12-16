@@ -54,6 +54,8 @@
 
             .player-list-container {
                 flex: 1;
+                margin: 16px;
+                overflow: scroll;
             }
 
             .start-button {
@@ -97,7 +99,12 @@
             <template is="dom-if" if="[[_shouldRenderJoinGameScreen]]">
                 <div class="content fit container">
                     <div class="player-list-container">
-                        Players:
+                        <span>Players:</span>
+                        <ul>
+                            <template is="dom-repeat" items="{{players}}">
+                                <li>{{item.name}}</li>
+                            </template>
+                        </ul>
                     </div>
                     <template is="dom-if" if="[[_shouldRenderStartButton]]">
                         <paper-button class="start-button">
@@ -121,7 +128,17 @@
             is: "d-homepage",
             properties: {
                 games: Array,
-                selectedGame: Object,
+                selectedGame: {
+                  type: Object,
+                  value: {
+                    "name": "Demo Quiz",
+                    "players": [{
+                      "name": "Player 1"
+                    }, {
+                      "name": "Player 2"
+                    }]
+                  }
+                },
                 header: {
                     type: String,
                     value: 'Distributed Quiz'
@@ -133,6 +150,9 @@
                 isAdmin: {
                     type: Boolean,
                     value: true
+                },
+                players: {
+                    computed: '_computePlayers(selectedGame)'
                 },
                 _shouldRenderSelection: {
                     computed: '_computeShouldRenderSelection(state)'
@@ -158,6 +178,9 @@
             },
             _computeShouldRenderStartButton(state, isAdmin) {
                 return (state === JOINING_GAME) && isAdmin;
+            },
+            _computePlayers(selectedGame) {
+                return selectedGame ? selectedGame.players : [];
             }
         });
     </script>
