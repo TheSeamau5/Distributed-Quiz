@@ -77,15 +77,19 @@
 
 
             <template is="dom-if" if="[[_shouldRenderSelection]]">
+
                 <div class="selections">
-                    <paper-button class="game-button">
+
+                    <paper-button class="game-button" on-tap="CreateNewGame">
                         Create New Game
                     </paper-button>
+
                     <template is="dom-repeat" items="{{games}}">
-                        <paper-button class="game-button">
+                        <paper-button class="game-button" on-tap="JoiningGame">
                             Join: {{item.name}}
                         </paper-button>
                     </template>
+
                 </div>
             </template>
 
@@ -95,7 +99,11 @@
                         <paper-input label="Enter Quiz Name"></paper-input>
                     </div>
                     <div class="button-container">
-                        <paper-button class="create-button">CREATE</paper-button>
+
+                        <paper-button class="create-button" on-tap="Create">
+                            CREATE
+                        </paper-button>
+
                     </div>
                 </div>
             </template>
@@ -155,11 +163,11 @@
                 },
                 state: {
                     type: String,
-                    value: JOINING_GAME // EMPTY_STATE
+                    value: EMPTY_STATE
                 },
                 isAdmin: {
                     type: Boolean,
-                    value: false
+                    value: true
                 },
                 players: {
                     computed: '_computePlayers(selectedGame)'
@@ -197,6 +205,17 @@
             },
             _computePlayers(selectedGame) {
                 return selectedGame ? selectedGame.players : [];
+            },
+            CreateNewGame(){
+                this.state =CREATING_NEW_GAME;
+            },
+            JoiningGame(){
+                this.state=JOINING_GAME;
+                this.isAdmin=false;
+            },
+            Create() {
+                this.state=JOINING_GAME;
+                this.isAdmin=true;
             }
         });
     </script>
