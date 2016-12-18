@@ -66,13 +66,16 @@
         </div>
     </template>
     <script>
+        const NOT_ANSWERED = 'Not Answered';
+        const WAITING_FOR_ME = 'Waiting For Me';
+
         Polymer({
             /* this is the element's prototype */
             is: 'd-question',
             properties: {
                 buzzState: {
                     type: String,
-                    value: 'Not Answered'
+                    value: NOT_ANSWERED
                 },
                 id: Number,
                 socket: Object,
@@ -83,7 +86,8 @@
                     computed: '_computeShouldRenderBuzzButton(buzzState)'
                 },
                 statement: String,
-                choices: Array
+                choices: Array,
+                timeCorrection: Number
             },
 
             ready(){
@@ -106,14 +110,16 @@
             },
 
             _computeShouldRenderChoices(buzzState) {
-                return buzzState === 'Waiting For Me';
+                return buzzState === WAITING_FOR_ME;
             },
             _computeShouldRenderBuzzButton(buzzState) {
-                return buzzState === 'Not Answered';
+                return buzzState === NOT_ANSWERED;
             },
             buzz() {
-                this.buzzState = 'Waiting For Me';
-                this.socket.emit('buzz',{id:id})
+                this.socket.emit('buzz', {
+                  timestamp: Date.now() + Math.round(this.timeCorrection)
+                });
+                this.buzzState = WAITING_FOR_ME;
             }
         });
     </script>

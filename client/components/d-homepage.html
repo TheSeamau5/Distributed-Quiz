@@ -140,6 +140,7 @@
                         statement="{{statement}}"
                         socket="{{socket}}"
                         id="{{id}}"
+                        time-correction="{{timeCorrection}}"
                 >
                 </d-question>
             </template>
@@ -193,6 +194,10 @@
                 id: Number,
                 statement: String,
                 choices: Array,
+                timeCorrection: {
+                    type: Number,
+                    value: 0
+                },
                 players: {
                     computed: '_computePlayers(selectedGame)'
                 },
@@ -218,17 +223,15 @@
             ready() {
                 this.socket = io.connect('localhost:8080');
 
-                let timeCorrection = 0;
-
                 this.socket.on('request time', () => {
-                    let timestamp = Date.now() + Math.round(timeCorrection);
+                    let timestamp = Date.now() + Math.round(this.timeCorrection);
                     this.socket.emit('respond time', {
                         timestamp: timestamp
                     });
                 });
 
                 this.socket.on('correct time', (data) => {
-                    timeCorrection = timeCorrection + data.correction;
+                    this.timeCorrection = this.timeCorrection + data.correction;
                 });
 
                 this.socket.on('game created', (data) => {
