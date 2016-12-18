@@ -73,6 +73,8 @@
                     type: String,
                     value: 'Not Answered'
                 },
+                id: Number,
+                socket: Object,
                 _shouldRenderChoices: {
                     computed: '_computeShouldRenderChoices(buzzState)'
                 },
@@ -82,6 +84,26 @@
                 statement: String,
                 choices: Array
             },
+
+            ready(){
+                this.socket.on('answer',()=> {
+                         //todo
+                });
+
+                this.socket.on('waiting for answer',(data)=> {
+                    //todo
+                });
+
+                this.socket.on('correct',(data)=> {
+                    //todo
+                });
+
+                this.socket.on('incorrect',(data)=> {
+                    //todo
+                });
+
+            },
+
             _computeShouldRenderChoices(buzzState) {
                 return buzzState === 'Waiting For Me';
             },
@@ -90,6 +112,7 @@
             },
             buzz() {
                 this.buzzState = 'Waiting For Me';
+                this.socket.emit('buzz',{id:id})
             }
         });
     </script>

@@ -135,7 +135,12 @@
             </template>
 
             <template is="dom-if" if="[[_shouldRenderQuestion]]">
-                <d-question choices="{{choices}}" statement="{{statement}}">
+                <d-question
+                        choices="{{choices}}"
+                        statement="{{statement}}"
+                        socket="{{socket}}"
+                        id="{{id}}"
+                >
                 </d-question>
             </template>
 
