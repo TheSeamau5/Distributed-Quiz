@@ -223,9 +223,9 @@
                 });
 
                 this.socket.on('next question', (data) => {
-                    alert(JSON.stringify(data));
                     this.statement = data.statement;
                     this.choices = data.choices;
+                    this.state = PLAYING;
                 });
 
                 this.socket.on('admin', (data) => {
@@ -283,8 +283,7 @@
                 this.socket.emit("join game",{name:this.name})
             },
             Start() {
-                this.state=PLAYING;
-                this.socket.emit("start game",{id:this.id})
+                this.socket.emit("start game",{});
             }
         });
     </script>
