@@ -78,33 +78,24 @@
             </paper-toolbar>
 
 
-            <template is="dom-if" if="[[_shouldRenderSelection]]">
-
-                <div class="selections">
-
-                    <paper-button class="game-button" on-tap="CreateNewGame">
-                        Create New Game
-                    </paper-button>
-
-                    <template is="dom-repeat" items="{{games}}">
-                        <paper-button class="game-button" on-tap="JoiningGame">
-                            Join: {{item.name}}
-                        </paper-button>
-                    </template>
-
-                </div>
-            </template>
-
-            <template is="dom-if" if="[[_shouldRenderCreateNewGameScreen]]">
+            <template is="dom-if" if="[[_shouldRenderEnterNameScreen]]">
                 <div class="content fit container">
                     <div class="new-game-container">
                         <paper-input label="Enter Quiz Name" value="{{name}}"></paper-input>
                     </div>
                     <div class="button-container">
 
-                        <paper-button class="create-button" on-tap="Create">
-                            CREATE
-                        </paper-button>
+                        <template is="dom-if" if="[[isAdmin]]">
+                            <paper-button class="create-button" on-tap="Create">
+                                CREATE GAME
+                            </paper-button>
+                        </template>
+                        <template is="dom-if" if="[[!isAdmin]]">
+                            <paper-button class="create-button" on-tap="Join">
+                                JOIN
+                            </paper-button>
+                        </template>
+
 
                     </div>
                 </div>
@@ -207,6 +198,9 @@
                 _shouldRenderCreateNewGameScreen: {
                     computed: '_computeShouldRenderCreateNewGameScreen(state)'
                 },
+                _shouldRenderEnterNameScreen: {
+                    computed: '_computeShouldRenderEnterNameScreen(state)'
+                },
                 _shouldRenderJoinGameScreen: {
                     computed: '_computeShouldRenderJoinGameScreen(state)'
                 },
@@ -244,6 +238,9 @@
                     this.choices = data.choices;
                 });
 
+            },
+            _computeShouldRenderEnterNameScreen(state) {
+                return state === EMPTY_STATE;
             },
             _computeShouldRenderSelection(state) {
                 return state === EMPTY_STATE;
