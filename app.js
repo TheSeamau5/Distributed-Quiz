@@ -29,8 +29,9 @@ let game = null;
 io.on('connection', (socket) => {
 
   if (game) {
-    let player = new Player(socket);
-    game.addPlayer(player);
+    socket.emit('not admin', {});
+  } else {
+    socket.emit('admin', {});
   }
 
   socket.on('create new game', (data) => {
