@@ -81,7 +81,7 @@
             <template is="dom-if" if="[[_shouldRenderEnterNameScreen]]">
                 <div class="content fit container">
                     <div class="new-game-container">
-                        <paper-input label="Enter Quiz Name" value="{{name}}"></paper-input>
+                        <paper-input label="Enter Name" value="{{name}}"></paper-input>
                     </div>
                     <div class="button-container">
 
@@ -190,7 +190,8 @@
                     value: 0
                 },
                 players: {
-                    computed: '_computePlayers(selectedGame)'
+                    type: Array,
+                    value: []
                 },
                 _shouldRenderSelection: {
                     computed: '_computeShouldRenderSelection(state)'
@@ -230,6 +231,7 @@
 
                 this.socket.on('game created', (data) => {
                     this.id = data.id;
+                    alert(JSON.stringify(data));
                 });
 
                 this.socket.on('next question', (data) => {
@@ -237,6 +239,23 @@
                     this.statement = data.statement;
                     this.choices = data.choices;
                 });
+
+                this.socket.on('admin', (data) => {
+                   this.isAdmin = true;
+                });
+
+                this.socket.on('not admin', (data) => {
+                    this.isAdmin = false;
+                });
+
+                this.socket.on('new player joined', (data) => {
+                    this.players.push({
+                        id: data.id,
+                        name: data.name
+                    });
+                    alert(JSON.stringify(data));
+                });
+
 
             },
             _computeShouldRenderEnterNameScreen(state) {
@@ -257,9 +276,6 @@
             _computedShouldRenderWaitingDisabledButton(state, isAdmin) {
                 return (state === JOINING_GAME) && (!isAdmin);
             },
-            _computePlayers(selectedGame) {
-                return selectedGame ? selectedGame.players : [];
-            },
             _computeShouldRenderQuestion(state){
                return state === PLAYING;
             },
@@ -274,6 +290,10 @@
                 this.state=JOINING_GAME;
                 this.isAdmin=true;
                 this.socket.emit("create new game",{name:this.name})
+            },
+            Join(){
+                this.state=JOINING_GAME;
+                this.socket.emit("join game",{name:this.name})
             },
             Start() {
                 this.state=PLAYING;
