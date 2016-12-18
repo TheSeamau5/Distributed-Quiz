@@ -47,8 +47,7 @@ io.on('connection', (socket) => {
   socket.on('join game', (data) => {
     if (game) {
       let player = new Player(socket, data.name);
-      game.addPlayer(player);
-      socket.emit('game join', {
+      socket.emit('game joined', {
         name: player.name,
         id: player.id,
         players: game.players.map((player) => ({
@@ -56,6 +55,7 @@ io.on('connection', (socket) => {
           id: player.id
         }))
       });
+      game.addPlayer(player);
     }
   });
 

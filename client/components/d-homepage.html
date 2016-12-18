@@ -150,25 +150,10 @@
         Polymer({
             is: "d-homepage",
             properties: {
-                games: {
-                    type: Array,
-                    value: []
-                },
                 socket: Object,
                 name: {
                     type: String,
                     value: ""
-                },
-                selectedGame: {
-                    type: Object,
-                    value: {
-                        "name": "Demo Quiz",
-                        "players": [{
-                            "name": "Player 1"
-                        }, {
-                            "name": "Player 2"
-                        }]
-                    }
                 },
                 header: {
                     type: String,
@@ -192,9 +177,6 @@
                 players: {
                     type: Array,
                     value: []
-                },
-                _shouldRenderSelection: {
-                    computed: '_computeShouldRenderSelection(state)'
                 },
                 _shouldRenderCreateNewGameScreen: {
                     computed: '_computeShouldRenderCreateNewGameScreen(state)'
@@ -231,7 +213,13 @@
 
                 this.socket.on('game created', (data) => {
                     this.id = data.id;
-                    alert(JSON.stringify(data));
+                });
+
+                this.socket.on('game joined', (data) => {
+                    this.id = data.id;
+                    data.players.forEach((player) => {
+                       this.push('players', player);
+                    });
                 });
 
                 this.socket.on('next question', (data) => {
@@ -249,19 +237,18 @@
                 });
 
                 this.socket.on('new player joined', (data) => {
-                    this.players.push({
+                    console.log("New Player Joined");
+                    console.log(data);
+                    this.push('players', {
                         id: data.id,
                         name: data.name
                     });
-                    alert(JSON.stringify(data));
+                    console.log(this.players);
                 });
 
 
             },
             _computeShouldRenderEnterNameScreen(state) {
-                return state === EMPTY_STATE;
-            },
-            _computeShouldRenderSelection(state) {
                 return state === EMPTY_STATE;
             },
             _computeShouldRenderCreateNewGameScreen(state) {
