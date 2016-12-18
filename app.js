@@ -37,7 +37,7 @@ io.on('connection', (socket) => {
     game = new Game();
     let admin = new Player(socket, data.name);
     game.addPlayer(admin);
-    socket.emit('game create', {
+    socket.emit('game created', {
       name: admin.name,
       id: admin.id
     });
