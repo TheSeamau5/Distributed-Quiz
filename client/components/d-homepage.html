@@ -220,18 +220,18 @@
 
                 let timeCorrection = 0;
 
-                this.socket.on('request time', function () {
+                this.socket.on('request time', () => {
                     let timestamp = Date.now() + Math.round(timeCorrection);
                     this.socket.emit('respond time', {
                         timestamp: timestamp
                     });
                 });
 
-                this.socket.on('correct time', function (data) {
+                this.socket.on('correct time', (data) => {
                     timeCorrection = timeCorrection + data.correction;
                 });
 
-                this.socket.on('game created', function (data) {
+                this.socket.on('game created', (data) => {
                     this.id = data.id;
                 });
 

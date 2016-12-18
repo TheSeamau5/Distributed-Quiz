@@ -6,73 +6,48 @@ const http = require('http');
 const socketio = require('socket.io');
 const uuid = require('uuid/v4');
 
-
-// Import the game libraries
 const Game = require('./lib/game');
 const Player = require('./lib/player');
-
-const SlaveClockProxy = require('./lib/slave-clock-proxy');
 
 // Function to route a static file to the client directory
 function staticFile(filename) {
   return path.join(__dirname, 'client', filename);
 }
 
-class App {
+const app = express();
+const httpserver = http.Server(app);
+const io = socketio.listen(httpserver);
 
-  constructor() {
-    // Create the express app
-    this.app = express();
+app.use('/', express.static(path.join(__dirname, 'client')));
 
-    // Create the http server
-    this.httpserver = http.Server(this.app);
+app.get('/', (req, res) => {
+  res.sendFile(staticFile('index.html'));
+});
 
-    // Create the socket
-    this.io = socketio.listen(this.httpserver);
+let game = null;
 
-    // Create the Game
-    this.game = null;
+io.on('connection', (socket) => {
 
-    // Setup routes
-    this._setupHttpRoutes();
-    this._setupSocketConnection();
+  if (game) {
+    let player = new Player(socket);
+    game.addPlayer(player);
   }
 
-  _setupHttpRoutes() {
-    this.app.use('/', express.static(path.join(__dirname, 'client')));
-    this.app.get('/', (req, res) => {
-      this.getHomePage(req, res);
+  socket.on('create new game', (data) => {
+    game = new Game();
+    let admin = new Player(socket);
+    game.addPlayer(admin);
+    socket.emit('game create', {
+      name: data.name,
+      id: 0
     });
-  }
+  });
 
-  _setupSocketConnection() {
-    this.io.on('connection', (socket) => {
-      const playerClock = new SlaveClockProxy(socket);
-      const player = new Player(uuid(), 'player', playerClock);
-      this.addPlayer(player);
-      this.game.run();
-    });
-  }
+});
 
-  static getHomePage(req, res) {
-    res.sendFile(staticFile('index.html'));
-  }
 
-  addPlayer(player) {
-    if (!this.game) {
-      this.game = new Game('game', player);
-    } else {
-      this.game.addPlayer(player);
-    }
-  }
-
-  run() {
-    if (module === require.main) {
-      this.httpserver.listen(process.env.PORT || 8080);
-    }
-    module.exports = this.app;
-  }
+if (module === require.main) {
+  httpserver.listen(process.env.PORT || 8080);
 }
 
-const app = new App();
-app.run();
+module.exports = app;
