@@ -35,12 +35,27 @@ io.on('connection', (socket) => {
 
   socket.on('create new game', (data) => {
     game = new Game();
-    let admin = new Player(socket);
+    let admin = new Player(socket, data.name);
     game.addPlayer(admin);
     socket.emit('game create', {
-      name: data.name,
-      id: 0
+      name: admin.name,
+      id: admin.id
     });
+  });
+
+  socket.on('join game', (data) => {
+    if (game) {
+      let player = new Player(socket, data.name);
+      game.addPlayer(player);
+      socket.emit('game join', {
+        name: player.name,
+        id: player.id,
+        players: game.players.map((player) => ({
+          name: player.name,
+          id: player.id
+        }))
+      });
+    }
   });
 
 });
