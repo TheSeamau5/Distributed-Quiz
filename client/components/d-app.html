@@ -3,10 +3,11 @@
 <link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../bower_components/paper-radio-button/paper-radio-button.html">
 <script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
-<link rel="import" href="d-question.html">
 
-<dom-module id="d-homepage">
+<dom-module id="d-app">
     <template>
         <style>
             :host {
@@ -70,6 +71,29 @@
                 width: 100%;
                 margin: 0;
             }
+
+            .layout-container {
+                display: flex;
+                height: 99%;
+                flex-direction: column;
+            }
+            .statement {
+                margin: 10px;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24pt;
+            }
+            .choices {
+                flex: 4;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+            }
+            .submit {
+                background-color: #2ecc71;
+            }
         </style>
 
         <paper-header-panel>
@@ -126,14 +150,35 @@
             </template>
 
             <template is="dom-if" if="[[_shouldRenderQuestion]]">
-                <d-question
-                        choices="{{choices}}"
-                        statement="{{statement}}"
-                        socket="{{socket}}"
-                        id="{{id}}"
-                        time-correction="{{timeCorrection}}"
-                >
-                </d-question>
+                <div class="layout-container">
+                    <span class="statement">
+                        [[statement]]
+                    </span>
+
+                    <template is="dom-if" if="[[_shouldRenderChoices]]">
+                        <paper-radio-group selected="0" class="choices">
+                            <template is="dom-repeat" items="{{choices}}">
+                                <paper-radio-button name="{{index}}">{{item}}</paper-radio-button>
+                            </template>
+                        </paper-radio-group>
+
+                        <paper-button class="submit" raised>
+                            Submit
+                        </paper-button>
+                    </template>
+
+                    <template is="dom-if" if="[[_shouldRenderBuzzButton]]">
+                        <paper-button
+                                class="submit"
+                                raised
+                                on-tap="buzz"
+                        >
+                            Buzz
+                        </paper-button>
+                    </template>
+
+
+                </div>
             </template>
 
         </paper-header-panel>
@@ -147,8 +192,13 @@
         const JOINING_GAME = 'joining game';
         const PLAYING = 'playing';
 
+        const NOT_BUZZED = 'not buzzed';
+        const BUZZED = 'buzzed';
+        const ANSWERING = 'answering';
+        const WAITING = 'waiting';
+
         Polymer({
-            is: "d-homepage",
+            is: "d-app",
             properties: {
                 socket: Object,
                 name: {
@@ -162,6 +212,10 @@
                 state: {
                     type: String,
                     value: EMPTY_STATE
+                },
+                questionState: {
+                    type: String,
+                    value: NOT_BUZZED
                 },
                 isAdmin: {
                     type: Boolean,
@@ -196,6 +250,12 @@
                 _shouldRenderQuestion: {
                     computed: '_computeShouldRenderQuestion(state)'
                 },
+                _shouldRenderChoices: {
+                    computed: '_computeShouldRenderChoices(state, questionState)'
+                },
+                _shouldRenderBuzzButton: {
+                    computed: '_computeShouldRenderBuzzButton(state, questionState)'
+                }
             },
             ready() {
                 this.socket = io.connect('localhost:8080');
@@ -225,6 +285,7 @@
                 this.socket.on('next question', (data) => {
                     this.statement = data.statement;
                     this.choices = data.choices;
+                    this.questionState = NOT_BUZZED;
                     this.state = PLAYING;
                 });
 
@@ -246,6 +307,13 @@
                     console.log(this.players);
                 });
 
+                this.socket.on('answer', () => {
+                  this.questionState = ANSWERING;
+                });
+
+                this.socket.on('waiting for answer', (data) => {
+                  this.questionState = WAITING;
+                });
 
             },
             _computeShouldRenderEnterNameScreen(state) {
@@ -266,6 +334,12 @@
             _computeShouldRenderQuestion(state){
                return state === PLAYING;
             },
+            _computeShouldRenderChoices(state, questionState) {
+                return (state === PLAYING) && (questionState === ANSWERING);
+            },
+            _computeShouldRenderBuzzButton(state, questionState) {
+                return (state === PLAYING) && (questionState === NOT_BUZZED);
+            },
             CreateNewGame(){
                 this.state =CREATING_NEW_GAME;
             },
@@ -284,6 +358,12 @@
             },
             Start() {
                 this.socket.emit("start game",{});
+            },
+            buzz() {
+              this.socket.emit('buzz', {
+                timestamp: Date.now() + Math.round(this.timeCorrection)
+              });
+              this.questionState = BUZZED;
             }
         });
     </script>
