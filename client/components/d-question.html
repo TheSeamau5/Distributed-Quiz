@@ -16,7 +16,7 @@
                 height: 99%;
                 flex-direction: column;
             }
-            .question {
+            .statement {
                 margin: 10px;
                 flex: 1;
                 display: flex;
@@ -35,8 +35,8 @@
             }
         </style>
         <div class="layout-container">
-            <span class="question">
-                [[question]]
+            <span class="statement">
+                [[statement]]
             </span>
 
             <template is="dom-if" if="[[_shouldRenderChoices]]">
@@ -79,7 +79,7 @@
                 _shouldRenderBuzzButton: {
                     computed: '_computeShouldRenderBuzzButton(buzzState)'
                 },
-                question: String,
+                statement: String,
                 choices: Array
             },
             _computeShouldRenderChoices(buzzState) {

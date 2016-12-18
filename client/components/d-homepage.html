@@ -4,6 +4,7 @@
 <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
+<link rel="import" href="d-question.html">
 
 <dom-module id="d-homepage">
     <template>
@@ -120,7 +121,7 @@
                         </ul>
                     </div>
                     <template is="dom-if" if="[[_shouldRenderStartButton]]">
-                        <paper-button class="start-button">
+                        <paper-button class="start-button" on-tap="Start">
                             START
                         </paper-button>
                     </template>
@@ -133,6 +134,11 @@
                 </div>
             </template>
 
+            <template is="dom-if" if="[[_shouldRenderQuestion]]">
+                <d-question choices="{{choices}}" statement="{{statement}}">
+                </d-question>
+            </template>
+
         </paper-header-panel>
 
 
@@ -142,6 +148,7 @@
         const EMPTY_STATE = 'empty state';
         const CREATING_NEW_GAME = 'creating new game';
         const JOINING_GAME = 'joining game';
+        const PLAYING = 'playing';
 
         Polymer({
             is: "d-homepage",
@@ -152,19 +159,19 @@
                 },
                 socket: Object,
                 name: {
-                    type : String,
-                    value : ""
+                    type: String,
+                    value: ""
                 },
                 selectedGame: {
-                  type: Object,
-                  value: {
-                    "name": "Demo Quiz",
-                    "players": [{
-                      "name": "Player 1"
-                    }, {
-                      "name": "Player 2"
-                    }]
-                  }
+                    type: Object,
+                    value: {
+                        "name": "Demo Quiz",
+                        "players": [{
+                            "name": "Player 1"
+                        }, {
+                            "name": "Player 2"
+                        }]
+                    }
                 },
                 header: {
                     type: String,
@@ -178,6 +185,9 @@
                     type: Boolean,
                     value: true
                 },
+                id: Number,
+                statement: String,
+                choices: Array,
                 players: {
                     computed: '_computePlayers(selectedGame)'
                 },
@@ -195,27 +205,37 @@
                 },
                 _shouldRenderWaitingDisabledButton: {
                     computed: '_computedShouldRenderWaitingDisabledButton(state, isAdmin)'
-                }
+                },
+                _shouldRenderQuestion: {
+                    computed: '_computeShouldRenderQuestion(state)'
+                },
             },
             ready() {
                 this.socket = io.connect('localhost:8080');
 
                 let timeCorrection = 0;
 
-                this.socket.on('request time', function() {
+                this.socket.on('request time', function () {
                     let timestamp = Date.now() + Math.round(timeCorrection);
                     this.socket.emit('respond time', {
-                      timestamp: timestamp
+                        timestamp: timestamp
                     });
                 });
 
-                this.socket.on('correct time', function(data) {
+                this.socket.on('correct time', function (data) {
                     timeCorrection = timeCorrection + data.correction;
                 });
 
-                this.socket.on('game created', function(data) {
+                this.socket.on('game created', function (data) {
+                    this.id = data.id;
+                });
+
+                this.socket.on('next question', (data) => {
                     alert(JSON.stringify(data));
-                })
+                    this.statement = data.statement;
+                    this.choices = data.choices;
+                });
+
             },
             _computeShouldRenderSelection(state) {
                 return state === EMPTY_STATE;
@@ -235,6 +255,9 @@
             _computePlayers(selectedGame) {
                 return selectedGame ? selectedGame.players : [];
             },
+            _computeShouldRenderQuestion(state){
+               return state === PLAYING;
+            },
             CreateNewGame(){
                 this.state =CREATING_NEW_GAME;
             },
@@ -246,6 +269,10 @@
                 this.state=JOINING_GAME;
                 this.isAdmin=true;
                 this.socket.emit("create new game",{name:this.name})
+            },
+            Start() {
+                this.state=PLAYING;
+                this.socket.emit("start game",{id:this.id})
             }
         });
     </script>
