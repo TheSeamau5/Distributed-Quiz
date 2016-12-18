@@ -97,7 +97,7 @@
             <template is="dom-if" if="[[_shouldRenderCreateNewGameScreen]]">
                 <div class="content fit container">
                     <div class="new-game-container">
-                        <paper-input label="Enter Quiz Name"></paper-input>
+                        <paper-input label="Enter Quiz Name" value="{{name}}"></paper-input>
                     </div>
                     <div class="button-container">
 
@@ -146,8 +146,15 @@
         Polymer({
             is: "d-homepage",
             properties: {
-                games: Array,
+                games: {
+                    type: Array,
+                    value: []
+                },
                 socket: Object,
+                name: {
+                    type : String,
+                    value : ""
+                },
                 selectedGame: {
                   type: Object,
                   value: {
@@ -205,6 +212,10 @@
                 this.socket.on('correct time', function(data) {
                     timeCorrection = timeCorrection + data.correction;
                 });
+
+                this.socket.on('game created', function(data) {
+                    alert(JSON.stringify(data));
+                })
             },
             _computeShouldRenderSelection(state) {
                 return state === EMPTY_STATE;
@@ -234,6 +245,7 @@
             Create() {
                 this.state=JOINING_GAME;
                 this.isAdmin=true;
+                this.socket.emit("create new game",{name:this.name})
             }
         });
     </script>
