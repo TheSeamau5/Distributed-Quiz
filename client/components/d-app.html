@@ -16,16 +16,6 @@
                 height: 100%;
             }
 
-            .selections {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .game-button {
-                background-color: #e0e0e0;
-                margin-top: 10px;
-            }
-
             .new-game-container {
                 flex: 1;
                 display: flex;
@@ -74,7 +64,7 @@
 
             .layout-container {
                 display: flex;
-                height: 99%;
+                height: 100%;
                 flex-direction: column;
             }
             .statement {
@@ -91,14 +81,22 @@
                 flex-direction: column;
                 justify-content: space-around;
             }
-            .submit {
-                background-color: #2ecc71;
+            .response {
+                height: 80px;
+                margin: 10px;
+            }
+
+            .score {
+                position: absolute;
+                margin: 15px;
+                right: 0px;
             }
         </style>
 
         <paper-header-panel>
-            <paper-toolbar>
+            <paper-toolbar class="toolbar">
                 <div>{{header}}</div>
+
             </paper-toolbar>
 
 
@@ -150,6 +148,9 @@
             </template>
 
             <template is="dom-if" if="[[_shouldRenderQuestion]]">
+                <div class="score">
+                    Score: {{score}}
+                </div>
                 <div class="layout-container">
                     <span class="statement">
                         [[statement]]
@@ -168,35 +169,32 @@
                             </template>
                         </paper-radio-group>
 
-                        <paper-button class="submit" raised on-tap="selectAnswer">
+                        <paper-button class="start-button" on-tap="selectAnswer">
                             Submit
                         </paper-button>
                     </template>
 
                     <template is="dom-if" if="[[_shouldRenderBuzzButton]]">
-                        <paper-button
-                                class="submit"
-                                raised
-                                on-tap="buzz"
-                        >
+                        <paper-button class="start-button" on-tap="buzz">
                             Buzz
                         </paper-button>
                     </template>
 
                     <template is="dom-if" if="[[_shouldDisplayCorrectPage]]">
-                        Correct : The answer is {{correctAnswer}}
-
-
-
+                        <div class="response">
+                            Correct : The answer is {{correctAnswer}}
+                        </div>
                     </template>
 
                     <template is="dom-if" if="[[_shouldDisplayIncorrectPage]]">
-                        Incorrect : The answer is {{correctAnswer}}
+                        <div class="response">
+                            Incorrect : The answer is {{correctAnswer}}
+                        </div>
 
                     </template>
 
                     <template is="dom-if" if="[[_shouldRenderNextQuestionButton]]">
-                        <paper-button class="create-button" on-tap="NextQuestion">
+                        <paper-button class="start-button" on-tap="NextQuestion">
                             NEXT QUESTION
                         </paper-button>
                     </template>
@@ -258,6 +256,10 @@
                 players: {
                     type: Array,
                     value: []
+                },
+                score: {
+                    type: Number,
+                    value: 0
                 },
                 selectedAnswer:{
                     type: Number,
@@ -362,15 +364,15 @@
                 });
 
                 this.socket.on('correct', (data) => {
-                  alert(JSON.stringify(data));
                   this.correctAnswer = data.answer;
                   this.questionState = CORRECT;
+                  this.score = data.score;
                 });
 
                 this.socket.on('incorrect', (data) => {
-                  alert("Incorrect: " + JSON.stringify(data));
                   this.correctAnswer = data.answer;
                   this.questionState = INCORRECT;
+                  this.score = data.score;
                 });
             },
             _computeShouldRenderEnterNameScreen(state) {
