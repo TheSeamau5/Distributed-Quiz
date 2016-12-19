@@ -162,13 +162,13 @@
                     </template>
 
                     <template is="dom-if" if="[[_shouldRenderChoices]]">
-                        <paper-radio-group selected="0" class="choices">
+                        <paper-radio-group selected="{{selectedAnswer}}" class="choices">
                             <template is="dom-repeat" items="{{choices}}">
                                 <paper-radio-button name="{{index}}">{{item}}</paper-radio-button>
                             </template>
                         </paper-radio-group>
 
-                        <paper-button class="submit" raised>
+                        <paper-button class="submit" raised on-tap="selectAnswer">
                             Submit
                         </paper-button>
                     </template>
@@ -236,7 +236,10 @@
                     type: Array,
                     value: []
                 },
-
+                selectedAnswer:{
+                    type: Number,
+                    value: 0
+                },
                 playerCurrentlyAnswering: String,
 
                 _shouldRenderCreateNewGameScreen: {
@@ -377,6 +380,12 @@
                 timestamp: Date.now() + Math.round(this.timeCorrection)
               });
               this.questionState = BUZZED;
+            },
+            selectAnswer() {
+                this.socket.emit('select answer', {
+                    answer: this.choices[this.selectedAnswer]
+                });
+
             }
         });
     </script>
