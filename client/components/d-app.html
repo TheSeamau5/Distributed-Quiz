@@ -185,6 +185,16 @@
                 </div>
             </template>
 
+            <template is="dom-if" if="[[_shouldDisplayCorrectPage]]">
+                Correct : The answer is {{selectedAnswer}}
+
+            </template>
+
+            <template is="dom-if" if="[[_shouldDisplayIncorrectPage]]">
+                Incorrect : The answer is {{selectedAnswer}}
+
+            </template>
+
         </paper-header-panel>
 
 
@@ -200,6 +210,9 @@
         const BUZZED = 'buzzed';
         const ANSWERING = 'answering';
         const WAITING = 'waiting';
+
+        const CORRECT = 'correct';
+        const INCORRECT = 'incorrect';
 
         Polymer({
             is: "d-app",
@@ -240,6 +253,7 @@
                     type: Number,
                     value: 0
                 },
+                correctAnswer:String,
                 playerCurrentlyAnswering: String,
 
                 _shouldRenderCreateNewGameScreen: {
@@ -268,6 +282,12 @@
                 },
                 _shouldRenderBuzzButton: {
                     computed: '_computeShouldRenderBuzzButton(state, questionState)'
+                },
+                _shouldDisplayCorrectPage: {
+                    computed: '_computeShouldDisplayCorrectPage(state, questionState)'
+                },
+                _shouldDisplayIncorrectPage: {
+                    computed: '_computeShouldDisplayIncorrectPage(state, questionState)'
                 }
             },
             ready() {
@@ -331,10 +351,12 @@
 
                 this.socket.on('correct', (data) => {
                   alert(JSON.stringify(data));
+                  this.correctAnswer = data.answer;
                 });
 
                 this.socket.on('incorrect', (data) => {
                   alert("Incorrect: " + JSON.stringify(data));
+                    this.correctAnswer = data.answer;
                 });
             },
             _computeShouldRenderEnterNameScreen(state) {
@@ -363,6 +385,12 @@
             },
             _computeShouldRenderBuzzButton(state, questionState) {
                 return (state === PLAYING) && (questionState === NOT_BUZZED);
+            },
+            _computeShouldDisplayCorrectPage(state, questionState) {
+                return (state === PLAYING) && (questionState === CORRECT);
+            },
+            _computeShouldDisplayIncorrectPage(state, questionState) {
+                return (state === PLAYING) && (questionState === INCORRECT);
             },
             CreateNewGame(){
                 this.state =CREATING_NEW_GAME;
