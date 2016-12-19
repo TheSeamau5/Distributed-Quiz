@@ -321,7 +321,7 @@
                   this.questionState = ANSWERING;
                 });
 
-                this.socket.on('waiting for answer', (data) => {
+                this.socket.on('wait for answer', (data) => {
                     this.questionState = WAITING;
                     this.playerCurrentlyAnswering = data.name;
                 });
