@@ -186,11 +186,19 @@
                     <template is="dom-if" if="[[_shouldDisplayCorrectPage]]">
                         Correct : The answer is {{correctAnswer}}
 
+
+
                     </template>
 
                     <template is="dom-if" if="[[_shouldDisplayIncorrectPage]]">
                         Incorrect : The answer is {{correctAnswer}}
 
+                    </template>
+
+                    <template is="dom-if" if="[[_shouldRenderNextQuestionButton]]">
+                        <paper-button class="create-button" on-tap="NextQuestion">
+                            NEXT QUESTION
+                        </paper-button>
                     </template>
                 </div>
             </template>
@@ -289,6 +297,9 @@
                 },
                 _shouldDisplayIncorrectPage: {
                     computed: '_computeShouldDisplayIncorrectPage(state, questionState)'
+                },
+                _shouldRenderNextQuestionButton: {
+                    computed: '_computeShouldRenderNextQuestionButton(state, questionState, isAdmin)'
                 }
             },
             ready() {
@@ -395,6 +406,11 @@
             _computeShouldDisplayIncorrectPage(state, questionState) {
                 return (state === PLAYING) && (questionState === INCORRECT);
             },
+            _computeShouldRenderNextQuestionButton(state, questionState, isAdmin){
+                return (state === PLAYING) &&
+                       ((questionState === INCORRECT) || (questionState === CORRECT)) &&
+                       (isAdmin);
+            },
             CreateNewGame(){
                 this.state =CREATING_NEW_GAME;
             },
@@ -424,6 +440,9 @@
                 this.socket.emit('select answer', {
                     answer: this.choices[this.selectedAnswer]
                 });
+            },
+            NextQuestion() {
+                this.socket.emit('next question', {});
             }
         });
     </script>
