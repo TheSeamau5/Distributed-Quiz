@@ -155,6 +155,12 @@
                         [[statement]]
                     </span>
 
+                    <template is="dom-if" if="[[_shouldRenderWaitingPage]]">
+                        <div>
+                            Waiting for {{playerCurrentlyAnswering}}
+                        </div>
+                    </template>
+
                     <template is="dom-if" if="[[_shouldRenderChoices]]">
                         <paper-radio-group selected="0" class="choices">
                             <template is="dom-repeat" items="{{choices}}">
@@ -176,8 +182,6 @@
                             Buzz
                         </paper-button>
                     </template>
-
-
                 </div>
             </template>
 
@@ -232,6 +236,9 @@
                     type: Array,
                     value: []
                 },
+
+                playerCurrentlyAnswering: String,
+
                 _shouldRenderCreateNewGameScreen: {
                     computed: '_computeShouldRenderCreateNewGameScreen(state)'
                 },
@@ -252,6 +259,9 @@
                 },
                 _shouldRenderChoices: {
                     computed: '_computeShouldRenderChoices(state, questionState)'
+                },
+                _shouldRenderWaitingPage: {
+                    computed: '_computeShouldRenderWaitingPage(state, questionState)'
                 },
                 _shouldRenderBuzzButton: {
                     computed: '_computeShouldRenderBuzzButton(state, questionState)'
@@ -312,9 +322,9 @@
                 });
 
                 this.socket.on('waiting for answer', (data) => {
-                  this.questionState = WAITING;
+                    this.questionState = WAITING;
+                    this.playerCurrentlyAnswering = data.name;
                 });
-
             },
             _computeShouldRenderEnterNameScreen(state) {
                 return state === EMPTY_STATE;
@@ -336,6 +346,9 @@
             },
             _computeShouldRenderChoices(state, questionState) {
                 return (state === PLAYING) && (questionState === ANSWERING);
+            },
+            _computeShouldRenderWaitingPage(state, questionState) {
+                return (state === PLAYING) && (questionState === WAITING);
             },
             _computeShouldRenderBuzzButton(state, questionState) {
                 return (state === PLAYING) && (questionState === NOT_BUZZED);
