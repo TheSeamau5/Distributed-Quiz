@@ -51,7 +51,7 @@
                 overflow: scroll;
             }
 
-            .start-button {
+            .action-button {
                 width: 100%;
                 margin: 0;
                 background-color: #00e676;
@@ -108,12 +108,12 @@
                     <div class="button-container">
 
                         <template is="dom-if" if="[[isAdmin]]">
-                            <paper-button class="create-button" on-tap="Create">
+                            <paper-button class="create-button" on-tap="createNewGame">
                                 CREATE GAME
                             </paper-button>
                         </template>
                         <template is="dom-if" if="[[!isAdmin]]">
-                            <paper-button class="create-button" on-tap="Join">
+                            <paper-button class="create-button" on-tap="joinGame">
                                 JOIN
                             </paper-button>
                         </template>
@@ -134,7 +134,7 @@
                         </ul>
                     </div>
                     <template is="dom-if" if="[[_shouldRenderStartButton]]">
-                        <paper-button class="start-button" on-tap="Start">
+                        <paper-button class="action-button" on-tap="startGame">
                             START
                         </paper-button>
                     </template>
@@ -169,13 +169,13 @@
                             </template>
                         </paper-radio-group>
 
-                        <paper-button class="start-button" on-tap="selectAnswer">
+                        <paper-button class="action-button" on-tap="selectAnswer">
                             Submit
                         </paper-button>
                     </template>
 
                     <template is="dom-if" if="[[_shouldRenderBuzzButton]]">
-                        <paper-button class="start-button" on-tap="buzz">
+                        <paper-button class="action-button" on-tap="buzz">
                             Buzz
                         </paper-button>
                     </template>
@@ -194,7 +194,7 @@
                     </template>
 
                     <template is="dom-if" if="[[_shouldRenderNextQuestionButton]]">
-                        <paper-button class="start-button" on-tap="NextQuestion">
+                        <paper-button class="action-button" on-tap="nextQuestion">
                             NEXT QUESTION
                         </paper-button>
                     </template>
@@ -413,23 +413,16 @@
                        ((questionState === INCORRECT) || (questionState === CORRECT)) &&
                        (isAdmin);
             },
-            CreateNewGame(){
-                this.state =CREATING_NEW_GAME;
-            },
-            JoiningGame(){
-                this.state=JOINING_GAME;
-                this.isAdmin=false;
-            },
-            Create() {
-                this.state=JOINING_GAME;
-                this.isAdmin=true;
+            createNewGame() {
+                this.state = JOINING_GAME;
+                this.isAdmin = true;
                 this.socket.emit("create new game",{name:this.name})
             },
-            Join(){
-                this.state=JOINING_GAME;
+            joinGame(){
+                this.state = JOINING_GAME;
                 this.socket.emit("join game",{name:this.name})
             },
-            Start() {
+            startGame() {
                 this.socket.emit("start game",{});
             },
             buzz() {
@@ -443,7 +436,7 @@
                     answer: this.choices[this.selectedAnswer]
                 });
             },
-            NextQuestion() {
+            nextQuestion() {
                 this.socket.emit('next question', {});
             }
         });
