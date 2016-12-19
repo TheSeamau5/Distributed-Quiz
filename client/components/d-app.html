@@ -328,6 +328,14 @@
                     this.questionState = WAITING;
                     this.playerCurrentlyAnswering = data.name;
                 });
+
+                this.socket.on('correct', (data) => {
+                  alert(JSON.stringify(data));
+                });
+
+                this.socket.on('incorrect', (data) => {
+                  alert("Incorrect: " + JSON.stringify(data));
+                });
             },
             _computeShouldRenderEnterNameScreen(state) {
                 return state === EMPTY_STATE;
