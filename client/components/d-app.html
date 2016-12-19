@@ -182,18 +182,20 @@
                             Buzz
                         </paper-button>
                     </template>
+
+                    <template is="dom-if" if="[[_shouldDisplayCorrectPage]]">
+                        Correct : The answer is {{correctAnswer}}
+
+                    </template>
+
+                    <template is="dom-if" if="[[_shouldDisplayIncorrectPage]]">
+                        Incorrect : The answer is {{correctAnswer}}
+
+                    </template>
                 </div>
             </template>
 
-            <template is="dom-if" if="[[_shouldDisplayCorrectPage]]">
-                Correct : The answer is {{selectedAnswer}}
 
-            </template>
-
-            <template is="dom-if" if="[[_shouldDisplayIncorrectPage]]">
-                Incorrect : The answer is {{selectedAnswer}}
-
-            </template>
 
         </paper-header-panel>
 
@@ -253,9 +255,8 @@
                     type: Number,
                     value: 0
                 },
-                correctAnswer:String,
+                correctAnswer: String,
                 playerCurrentlyAnswering: String,
-
                 _shouldRenderCreateNewGameScreen: {
                     computed: '_computeShouldRenderCreateNewGameScreen(state)'
                 },
@@ -352,11 +353,13 @@
                 this.socket.on('correct', (data) => {
                   alert(JSON.stringify(data));
                   this.correctAnswer = data.answer;
+                  this.questionState = CORRECT;
                 });
 
                 this.socket.on('incorrect', (data) => {
                   alert("Incorrect: " + JSON.stringify(data));
-                    this.correctAnswer = data.answer;
+                  this.correctAnswer = data.answer;
+                  this.questionState = INCORRECT;
                 });
             },
             _computeShouldRenderEnterNameScreen(state) {
@@ -421,7 +424,6 @@
                 this.socket.emit('select answer', {
                     answer: this.choices[this.selectedAnswer]
                 });
-
             }
         });
     </script>
