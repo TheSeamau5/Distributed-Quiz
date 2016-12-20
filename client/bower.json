@@ -13,6 +13,7 @@
     "localforage": "^1.4.3",
     "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.7",
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.7",
-    "paper-input": "PolymerElements/paper-input#^1.1.22"
+    "paper-input": "PolymerElements/paper-input#^1.1.22",
+    "iron-data-table": "^1.0.6"
   }
 }
