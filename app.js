@@ -30,18 +30,18 @@ io.on('connection', (socket) => {
 
 	if (game && game.admin) {
 		socket.emit('not admin', {});
-  	} else {
-    	socket.emit('admin', {});
-  	}
+	} else {
+		socket.emit('admin', {});
+	}
 
   	socket.on('create new game', (data) => {
-    	game = new Game();
-    	let admin = new Player(socket, data.name);
-    	game.addPlayer(admin);
-    	socket.emit('game created', {
-      		name: admin.name,
-      		id: admin.id
-    	});
+		game = new Game();
+		let admin = new Player(socket, data.name);
+		game.addPlayer(admin);
+		socket.emit('game created', {
+			name: admin.name,
+			id: admin.id
+		});
   	});
 
   	socket.on('join game', (data) => {
@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
 				game.addPlayer(player);
 			}
     	}
-  	});
+	});
 });
 
 
