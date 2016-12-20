@@ -4,69 +4,113 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const socketio = require('socket.io');
-const uuid = require('uuid/v4');
 
 const Game = require('./lib/game');
 const Player = require('./lib/player');
 
-// Function to route a static file to the client directory
-function staticFile(filename) {
-	return path.join(__dirname, 'client', filename);
-}
+const ADMIN_RESET = 'Admin Reset';
 
-const app = express();
-const httpserver = http.Server(app);
-const io = socketio.listen(httpserver);
+class App {
+	constructor() {
+		this.app = express();
+		this.httpserver = http.Server(this.app);
+		this.io = socketio.listen(this.httpserver);
+		this.game = null;
 
-app.use('/', express.static(path.join(__dirname, 'client')));
+		// Setup Http routes
+		this._setupRoutes();
 
-app.get('/', (req, res) => {
-	res.sendFile(staticFile('index.html'));
-});
+		// Setup Socket Connection
+		this._setupSocketConnection();
+	}
 
-let game = null;
+	_setupRoutes() {
+		this.app.use('/', express.static(path.join(__dirname, 'client')));
 
-io.on('connection', (socket) => {
+		this.app.get('/', (req, res) => {
+			res.sendFile(staticFile(__dirname, 'client', 'index.html'));
+		});
+	}
 
-	if (game && game.admin) {
-		socket.emit('not admin', {});
-	} else {
+	_setupSocketConnection() {
+		this.io.on('connection', (socket) => {
+			if (this.game && this.game.admin) {
+				App.notifyIsNotAdmin(socket);
+			} else {
+				App.notifyIsAdmin(socket);
+			}
+
+			this._setupSocketRoutes(socket);
+		});
+	}
+
+	_setupSocketRoutes(socket) {
+		socket.on('create new game', (data) => {
+			this.onCreateNewGame(socket, data);
+		});
+
+		socket.on('join game', (data) => {
+			this.onJoinGame(socket, data);
+		});
+	}
+
+	onCreateNewGame(socket, data) {
+		this.game = new Game();
+
+		let adminPlayer = new Player(socket, data.name);
+		this.game.addPlayer(adminPlayer);
+
+		App.notifyGameCreated(socket, adminPlayer);
+	}
+
+	onJoinGame(socket, data) {
+		if (this.game) {
+			if (data.name === ADMIN_RESET) {
+				this.game.resetGame();
+			} else {
+				let player = new Player(socket, data.name);
+
+				App.notifyGameJoined(socket, player, this.game);
+
+				this.game.addPlayer(player);
+			}
+		}
+	}
+
+	static notifyIsAdmin(socket) {
 		socket.emit('admin', {});
 	}
 
-  	socket.on('create new game', (data) => {
-		game = new Game();
-		let admin = new Player(socket, data.name);
-		game.addPlayer(admin);
+	static notifyIsNotAdmin(socket) {
+		socket.emit('not admin', {});
+	}
+
+	static notifyGameCreated(socket, player) {
 		socket.emit('game created', {
-			name: admin.name,
-			id: admin.id
+			name: player.name,
+			id: player.id
 		});
-  	});
+	}
 
-  	socket.on('join game', (data) => {
-    	if (game) {
-    		if (data.name === 'Admin Reset') {
-    			game = null;
-			} else {
-				let player = new Player(socket, data.name);
-				socket.emit('game joined', {
-					name: player.name,
-					id: player.id,
-					players: game.players.map((player) => ({
-						name: player.name,
-						id: player.id
-					}))
-				});
-				game.addPlayer(player);
-			}
-    	}
-	});
-});
+	static notifyGameJoined(socket, player, game) {
+		socket.emit('game joined', {
+			name: player.name,
+			id: player.id,
+			players: game.players.map((player) => ({
+				name: player.name,
+				id: player.id
+			}))
+		})
+	}
 
+	run() {
+		if (module === require.main) {
+			this.httpserver.listen(process.env.PORT || 8080);
+		}
 
-if (module === require.main) {
-	httpserver.listen(process.env.PORT || 8080);
+		module.exports = this.app;
+	}
 }
 
-module.exports = app;
+const app = new App();
+app.run();
