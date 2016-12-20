@@ -29,6 +29,7 @@
                 width: 100%;
                 display: flex;
                 flex-direction: column;
+                position: absolute;
             }
 
             .button-container {
@@ -62,12 +63,6 @@
                 width: 100%;
                 margin: 0;
             }
-
-            .layout-container {
-                display: flex;
-                height: 100%;
-                flex-direction: column;
-            }
             .statement {
                 margin: 10px;
                 flex: 1;
@@ -90,7 +85,7 @@
             .score {
                 position: absolute;
                 margin: 15px;
-                right: 0px;
+                right: 0;
             }
         </style>
 
@@ -150,7 +145,7 @@
                 <div class="score">
                     Score: {{score}}
                 </div>
-                <div class="layout-container">
+                <div class="container">
                     <span class="statement">
                         [[statement]]
                     </span>
@@ -237,8 +232,8 @@
             is: "d-app",
             properties: {
                 scoreTable: {
-                  type: Array,
-                  value: []
+                	type: Array,
+                    value: []
                 },
                 socket: Object,
                 name: {
@@ -343,7 +338,7 @@
                 this.socket.on('game joined', (data) => {
                     this.id = data.id;
                     data.players.forEach((player) => {
-                       this.push('players', player);
+                    	this.push('players', player);
                     });
                 });
 
@@ -373,7 +368,7 @@
                 });
 
                 this.socket.on('answer', () => {
-                  this.questionState = ANSWERING;
+                	this.questionState = ANSWERING;
                 });
 
                 this.socket.on('wait for answer', (data) => {
@@ -382,15 +377,15 @@
                 });
 
                 this.socket.on('correct', (data) => {
-                  this.correctAnswer = data.answer;
-                  this.questionState = CORRECT;
-                  this.score = data.score;
+                	this.correctAnswer = data.answer;
+                    this.questionState = CORRECT;
+                    this.score = data.score;
                 });
 
                 this.socket.on('incorrect', (data) => {
-                  this.correctAnswer = data.answer;
-                  this.questionState = INCORRECT;
-                  this.score = data.score;
+                    this.correctAnswer = data.answer;
+                    this.questionState = INCORRECT;
+                    this.score = data.score;
                 });
 
                 this.socket.on('game over', (data) => {
@@ -414,7 +409,7 @@
                 return (state === JOINING_GAME) && (!isAdmin);
             },
             _computeShouldRenderQuestion(state){
-               return state === PLAYING;
+                return state === PLAYING;
             },
             _computeShouldRenderChoices(state, questionState) {
                 return (state === PLAYING) && (questionState === ANSWERING);
@@ -452,10 +447,10 @@
                 this.socket.emit("start game",{});
             },
             buzz() {
-              this.socket.emit('buzz', {
-                timestamp: Date.now() + Math.round(this.timeCorrection)
-              });
-              this.questionState = BUZZED;
+                this.socket.emit('buzz', {
+                    timestamp: Date.now() + Math.round(this.timeCorrection)
+                });
+                this.questionState = BUZZED;
             },
             selectAnswer() {
                 this.socket.emit('select answer', {
