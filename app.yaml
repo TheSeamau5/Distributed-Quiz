@@ -13,7 +13,7 @@
 
 # [START app_yaml]
 runtime: nodejs
-vm: true
+env: flex
 
 # [START network]
 # This ensures clients will be able to connect via websockets to any instance of
