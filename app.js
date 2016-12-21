@@ -27,7 +27,7 @@ class App {
 		this.game = null;
 
 		this.host = (process.env.ENVIRONMENT === 'production') ? 'https://distributed-quiz.herokuapp.com' : 'localhost';
-		this.port = 8080;
+		this.port = process.env.PORT || 8080;
 
 		// Setup templating
 		this._setupTemplating();
