@@ -26,45 +26,20 @@ class App {
 		// Initialize the game
 		this.game = null;
 
-		this.host = null;
-		this.socketPort = null;
-		this.port = null;
+		this.host = (process.env.ENVIRONMENT === 'production') ? 'https://distributed-quiz.herokuapp.com' : 'localhost';
+		this.socketPort = 65080;
+		this.port = 8080;
 
-		this._setupHost(() => {
-			// Setup templating
-			this._setupTemplating();
-			// Setup Http routes
-			this._setupRoutes();
+		// Setup templating
+		this._setupTemplating();
+		// Setup Http routes
+		this._setupRoutes();
 
-			// Setup Socket Connection
-			this._setupSocketConnection();
+		// Setup Socket Connection
+		this._setupSocketConnection();
 
-			// Run the App
-			this.run();
-		});
-	}
-
-	_setupHost(cb) {
-		const METADATA_NETWORK_INTERFACE_URL = 'http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip';
-
-		const options = {
-			url: METADATA_NETWORK_INTERFACE_URL,
-			headers: {
-				'Metadata-Flavor': 'Google'
-			}
-		};
-
-		request(options, (err, resp, body) => {
-			if (err || resp.statusCode !== 200) {
-				console.log('Error while talking to metadata server, assuming localhost');
-				this.host = 'localhost';
-			} else {
-				this.host = body;
-			}
-			this.port = process.env.PORT || 8080;
-			this.socketPort = 65080;
-			cb();
-		});
+		// Run the App
+		this.run();
 	}
 
 	_setupTemplating() {
