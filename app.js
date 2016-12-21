@@ -21,13 +21,12 @@ class App {
 		// Initialize the express app, the http server, and the socket io port
 		this.app = express();
 		this.httpserver = http.Server(this.app);
-		this.io = socketio();
+		this.io = socketio.listen(this.httpserver);
 
 		// Initialize the game
 		this.game = null;
 
 		this.host = (process.env.ENVIRONMENT === 'production') ? 'https://distributed-quiz.herokuapp.com' : 'localhost';
-		this.socketPort = 65080;
 		this.port = 8080;
 
 		// Setup templating
@@ -55,7 +54,7 @@ class App {
 		this.app.get('/', (req, res) => {
 			res.render('index', {
 				HOST: this.host,
-				PORT: this.socketPort
+				PORT: this.port
 			});
 		});
 	}
@@ -151,8 +150,6 @@ class App {
 		if (module === require.main) {
 			this.httpserver.listen(this.port);
 			console.log(`Server Listening on port ${this.port}`);
-			this.io.listen(this.socketPort);
-			console.log(`Socket server listening on port ${this.socketPort}`);
 		}
 
 		module.exports = this.app;
