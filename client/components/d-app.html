@@ -389,7 +389,7 @@
 				this._setupSocketRoutes();
 			},
             _setupSocketConnection() {
-				this.socket = io.connect(window.API_URL);
+				this.socket = io();
             },
 
             _setupSocketRoutes() {
