@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const socketio = require('socket.io');
@@ -13,6 +14,10 @@ const Player = require('./lib/player');
 const ADMIN_RESET = 'Admin Reset';
 
 
+// Host Address and port
+const HOST = (process.env.NODE_ENV === 'production') ? 'distributed-quiz.appspot.com' : 'localhost';
+const PORT = process.env.PORT || 8080;
+
 // The Application
 class App {
 	constructor() {
@@ -24,11 +29,18 @@ class App {
 		// Initialize the game
 		this.game = null;
 
+		// Setup templating
+		this._setupTemplating();
 		// Setup Http routes
 		this._setupRoutes();
 
 		// Setup Socket Connection
 		this._setupSocketConnection();
+	}
+
+	_setupTemplating() {
+		this.app.set('view engine', 'ejs');
+		this.app.set('views', __dirname + '/client');
 	}
 
 	_setupRoutes() {
@@ -37,7 +49,10 @@ class App {
 
 		// Sets up the home directory
 		this.app.get('/', (req, res) => {
-			res.sendFile(path.join(__dirname, 'client', 'index.html'));
+			res.render('index', {
+				HOST: HOST,
+				PORT: PORT
+			});
 		});
 	}
 
@@ -130,7 +145,7 @@ class App {
 	// Run the server by listening to the main port or port 8080
 	run() {
 		if (module === require.main) {
-			this.httpserver.listen(process.env.PORT || 8080);
+			this.httpserver.listen(PORT);
 		}
 
 		module.exports = this.app;

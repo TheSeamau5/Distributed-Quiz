@@ -389,7 +389,7 @@
 				this._setupSocketRoutes();
 			},
             _setupSocketConnection() {
-				this.socket = io.connect('localhost:8080');
+				this.socket = io.connect(window.API_URL);
             },
 
             _setupSocketRoutes() {
