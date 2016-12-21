@@ -1,4 +1,7 @@
+<!-- Import Polymer, the framework used to make the client -->
 <link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- Import the components used -->
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
@@ -6,8 +9,11 @@
 <link rel="import" href="../bower_components/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="../bower_components/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../bower_components/iron-data-table/iron-data-table.html">
+
+<!-- Import the socket io library -->
 <script src="../bower_components/socket.io-client/dist/socket.io.js"></script>
 
+<!-- The Application component definition -->
 <dom-module id="d-app">
     <template>
         <style>
@@ -30,6 +36,7 @@
                 display: flex;
                 flex-direction: column;
                 position: absolute;
+                justify-content: space-between;
             }
 
             .button-container {
@@ -65,17 +72,17 @@
             }
             .statement {
                 margin: 10px;
-                flex: 1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 24pt;
+                font-size: 20pt;
             }
             .choices {
-                flex: 4;
+                flex: 2;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-around;
+                margin: 15px;
             }
             .response {
                 height: 80px;
@@ -83,19 +90,17 @@
             }
 
             .score {
-                position: absolute;
                 margin: 15px;
-                right: 0;
             }
         </style>
 
         <paper-header-panel>
             <paper-toolbar class="toolbar">
-                <div>{{header}}</div>
+                <div>Distributed Quiz</div>
 
             </paper-toolbar>
 
-
+            <!-- The Enter Name Screen -->
             <template is="dom-if" if="[[_shouldRenderEnterNameScreen]]">
                 <div class="content fit container">
                     <div class="new-game-container">
@@ -117,6 +122,7 @@
                 </div>
             </template>
 
+            <!-- The Join Game Screen -->
             <template is="dom-if" if="[[_shouldRenderJoinGameScreen]]">
                 <div class="content fit container">
                     <div class="player-list-container">
@@ -137,15 +143,15 @@
                             WAITING...
                         </paper-button>
                     </template>
-
                 </div>
             </template>
 
+            <!-- The Question Screen -->
             <template is="dom-if" if="[[_shouldRenderQuestion]]">
-                <div class="score">
-                    Score: {{score}}
-                </div>
                 <div class="container">
+                    <div class="score">
+                        Score: {{score}}
+                    </div>
                     <span class="statement">
                         [[statement]]
                     </span>
@@ -174,13 +180,19 @@
                         </paper-button>
                     </template>
 
-                    <template is="dom-if" if="[[_shouldDisplayCorrectPage]]">
+                    <template is="dom-if" if="[[_shouldRenderWaitingBuzzResponseDisabledButton]]">
+                        <paper-button disabled class="disabled-button">
+                            WAITING...
+                        </paper-button>
+                    </template>
+
+                    <template is="dom-if" if="[[_shouldRenderCorrectPage]]">
                         <div class="response">
                             Correct : The answer is {{correctAnswer}}
                         </div>
                     </template>
 
-                    <template is="dom-if" if="[[_shouldDisplayIncorrectPage]]">
+                    <template is="dom-if" if="[[_shouldRenderIncorrectPage]]">
                         <div class="response">
                             Incorrect : The answer is {{correctAnswer}}
                         </div>
@@ -195,6 +207,7 @@
                 </div>
             </template>
 
+            <!-- The Score Table Screen -->
             <template is="dom-if" if="[[_shouldRenderScoreTable]]">
                 <iron-data-table items="[[scoreTable]]">
                     <data-table-column name="Player">
@@ -205,116 +218,166 @@
                     </data-table-column>
                 </iron-data-table>
             </template>
-
-
-
         </paper-header-panel>
-
-
-
     </template>
     <script>
+        // Application player state constants
         const EMPTY_STATE = 'empty state';
         const CREATING_NEW_GAME = 'creating new game';
         const JOINING_GAME = 'joining game';
         const PLAYING = 'playing';
         const DONE_PLAYING = 'done playing';
 
+        // Question state constants
         const NOT_BUZZED = 'not buzzed';
         const BUZZED = 'buzzed';
         const ANSWERING = 'answering';
         const WAITING = 'waiting';
-
         const CORRECT = 'correct';
         const INCORRECT = 'incorrect';
 
+        // Application component
+        // The entire component is defined here
         Polymer({
+        	// The name of the component
             is: "d-app",
+            // The list of properties
             properties: {
+            	// The score table
                 scoreTable: {
                 	type: Array,
                     value: []
                 },
+
+                // The web socket
                 socket: Object,
+
+                // The player name
                 name: {
                     type: String,
                     value: ""
                 },
-                header: {
-                    type: String,
-                    value: 'Distributed Quiz'
-                },
+
+                // The player state of the application
                 state: {
                     type: String,
                     value: EMPTY_STATE
                 },
+
+                // The question state
                 questionState: {
                     type: String,
                     value: NOT_BUZZED
                 },
+
+                // Flag if player is an admin player
                 isAdmin: {
                     type: Boolean,
                     value: true
                 },
+
+                // The id of the player
                 id: Number,
+
+                // The current question statement
                 statement: String,
+
+                // The question choices
                 choices: Array,
+
+                // The amount by which the physical clock is to be corrected
                 timeCorrection: {
                     type: Number,
                     value: 0
                 },
+
+                // The list of players in the game
                 players: {
                     type: Array,
                     value: []
                 },
+
+                // The current player score
                 score: {
                     type: Number,
                     value: 0
                 },
+
+                // The current selected answer index
                 selectedAnswer:{
                     type: Number,
                     value: 0
                 },
+
+                // The correct answer
                 correctAnswer: String,
+
+                // The name of the player currently answering
                 playerCurrentlyAnswering: String,
-                _shouldRenderCreateNewGameScreen: {
-                    computed: '_computeShouldRenderCreateNewGameScreen(state)'
-                },
+
+                // Flag indicating if we should be rendering the enter name screen
                 _shouldRenderEnterNameScreen: {
                     computed: '_computeShouldRenderEnterNameScreen(state)'
                 },
+
+				// Flag indicating if we should be rendering the join game screen
                 _shouldRenderJoinGameScreen: {
                     computed: '_computeShouldRenderJoinGameScreen(state)'
                 },
+
+				// Flag indicating if we should be rendering the start game button
                 _shouldRenderStartButton: {
                     computed: '_computeShouldRenderStartButton(state, isAdmin)'
                 },
+
+				// Flag indicating if we should be rendering the waiting button
                 _shouldRenderWaitingDisabledButton: {
                     computed: '_computedShouldRenderWaitingDisabledButton(state, isAdmin)'
                 },
+
+				// Flag indicating if we should be rendering the question
                 _shouldRenderQuestion: {
                     computed: '_computeShouldRenderQuestion(state)'
                 },
+
+				// Flag indicating if we should be rendering the choices
                 _shouldRenderChoices: {
                     computed: '_computeShouldRenderChoices(state, questionState)'
                 },
+
+				// Flag indicating if we should be rendering the waiting page
                 _shouldRenderWaitingPage: {
                     computed: '_computeShouldRenderWaitingPage(state, questionState)'
                 },
+
+				// Flag indicating if we should be rendering the buzz button
                 _shouldRenderBuzzButton: {
                     computed: '_computeShouldRenderBuzzButton(state, questionState)'
                 },
-                _shouldDisplayCorrectPage: {
-                    computed: '_computeShouldDisplayCorrectPage(state, questionState)'
+
+				// Flag indicating if we should be rendering the correct page
+                _shouldRenderCorrectPage: {
+                    computed: '_computeShouldRenderCorrectPage(state, questionState)'
                 },
-                _shouldDisplayIncorrectPage: {
-                    computed: '_computeShouldDisplayIncorrectPage(state, questionState)'
+
+				// Flag indicating if we should be rendering the incorrect page
+                _shouldRenderIncorrectPage: {
+                    computed: '_computeShouldRenderIncorrectPage(state, questionState)'
                 },
+
+				// Flag indicating if we should be rendering the next question button
                 _shouldRenderNextQuestionButton: {
                     computed: '_computeShouldRenderNextQuestionButton(state, questionState, isAdmin)'
                 },
+
+				// Flag indicating if we should be rendering the score table
                 _shouldRenderScoreTable: {
                 	computed: '_computeShouldRenderScoreTable(state)'
+                },
+
+				// Flag indicating if we should be rendering the waiting for buzz response disabled button
+				_shouldRenderWaitingBuzzResponseDisabledButton: {
+                	computed: '_computeShouldRenderWaitingBuzzResponseDisabledButton(state, questionState)'
                 }
             },
             ready() {
@@ -420,10 +483,10 @@
             _computeShouldRenderBuzzButton(state, questionState) {
                 return (state === PLAYING) && (questionState === NOT_BUZZED);
             },
-            _computeShouldDisplayCorrectPage(state, questionState) {
+            _computeShouldRenderCorrectPage(state, questionState) {
                 return (state === PLAYING) && (questionState === CORRECT);
             },
-            _computeShouldDisplayIncorrectPage(state, questionState) {
+            _computeShouldRenderIncorrectPage(state, questionState) {
                 return (state === PLAYING) && (questionState === INCORRECT);
             },
             _computeShouldRenderNextQuestionButton(state, questionState, isAdmin){
@@ -433,6 +496,9 @@
             },
 			_computeShouldRenderScoreTable(state) {
             	return state === DONE_PLAYING;
+            },
+			_computeShouldRenderWaitingBuzzResponseDisabledButton(state, questionState){
+            	return (state === PLAYING) && (questionState === BUZZED);
             },
             createNewGame() {
                 this.state = JOINING_GAME;
