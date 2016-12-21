@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const socketio = require('socket.io');
+const request = require('request');
 
 const Game = require('./lib/game');
 const Player = require('./lib/player');
@@ -14,28 +15,56 @@ const Player = require('./lib/player');
 const ADMIN_RESET = 'Admin Reset';
 
 
-// Host Address and port
-const HOST = (process.env.NODE_ENV === 'production') ? 'distributed-quiz.appspot.com' : 'localhost';
-const PORT = process.env.PORT || 8080;
-
 // The Application
 class App {
 	constructor() {
 		// Initialize the express app, the http server, and the socket io port
 		this.app = express();
 		this.httpserver = http.Server(this.app);
-		this.io = socketio.listen(this.httpserver);
+		this.io = socketio();
 
 		// Initialize the game
 		this.game = null;
 
-		// Setup templating
-		this._setupTemplating();
-		// Setup Http routes
-		this._setupRoutes();
+		this.host = null;
+		this.socketPort = null;
+		this.port = null;
 
-		// Setup Socket Connection
-		this._setupSocketConnection();
+		this._setupHost(() => {
+			// Setup templating
+			this._setupTemplating();
+			// Setup Http routes
+			this._setupRoutes();
+
+			// Setup Socket Connection
+			this._setupSocketConnection();
+
+			// Run the App
+			this.run();
+		});
+	}
+
+	_setupHost(cb) {
+		const METADATA_NETWORK_INTERFACE_URL = 'http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip';
+
+		const options = {
+			url: METADATA_NETWORK_INTERFACE_URL,
+			headers: {
+				'Metadata-Flavor': 'Google'
+			}
+		};
+
+		request(options, (err, resp, body) => {
+			if (err || resp.statusCode !== 200) {
+				console.log('Error while talking to metadata server, assuming localhost');
+				this.host = 'localhost';
+			} else {
+				this.host = body;
+			}
+			this.port = process.env.PORT || 8080;
+			this.socketPort = 65080;
+			cb();
+		});
 	}
 
 	_setupTemplating() {
@@ -50,8 +79,8 @@ class App {
 		// Sets up the home directory
 		this.app.get('/', (req, res) => {
 			res.render('index', {
-				HOST: HOST,
-				PORT: PORT
+				HOST: this.host,
+				PORT: this.socketPort
 			});
 		});
 	}
@@ -145,7 +174,10 @@ class App {
 	// Run the server by listening to the main port or port 8080
 	run() {
 		if (module === require.main) {
-			this.httpserver.listen(PORT);
+			this.httpserver.listen(this.port);
+			console.log(`Server Listening on port ${this.port}`);
+			this.io.listen(this.socketPort);
+			console.log(`Socket server listening on port ${this.socketPort}`);
 		}
 
 		module.exports = this.app;
@@ -154,4 +186,3 @@ class App {
 
 // Create the app and run it
 const app = new App();
-app.run();

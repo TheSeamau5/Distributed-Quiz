@@ -16,6 +16,15 @@ runtime: nodejs
 env: flex
 # [END runtime]
 
+# [START network]
+# This ensures clients will be able to connect via websockets to any instance of
+# this app using websockets
+network:
+  forwarded_ports:
+  - 65080
+  instance_tag: websocket
+# [END network]
+
 # Temporary setting to keep gcloud from uploading node_modules
 skip_files:
  - ^node_modules$
